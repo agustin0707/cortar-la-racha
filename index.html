@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortar la Racha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { background-color: #202020; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f2f2f2;
+            color: #202020;
+            min-height: 100vh;
+            overflow-x: hidden;
+            opacity: 0;
+            animation: blurFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+        }
+        @keyframes blurFadeIn {
+            from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes blurFadeUp {
+            from { opacity: 0; transform: translateY(20px); filter: blur(3px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes revealParte {
+            from { opacity: 0; transform: translateY(28px); filter: blur(5px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes fadeOutBtn {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(8px); }
+        }
+        @keyframes cardFlip {
+            from { transform: rotateY(0deg); }
+            to   { transform: rotateY(180deg); }
+        }
+        @keyframes cardUnflip {
+            from { transform: rotateY(180deg); }
+            to   { transform: rotateY(0deg); }
+        }
+
+        /* ── HEADER ── */
+        .header {
+            padding: 52px 6vw 0 6vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+        .header-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.22em;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .header-titulo {
+            font-size: clamp(2.4rem, 10vw, 3.8rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 0.95;
+            color: #202020;
+        }
+        .header-meta {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.56rem;
+            letter-spacing: 0.16em;
+            color: #aaa;
+            text-transform: uppercase;
+            text-align: right;
+            line-height: 2;
+            align-self: flex-end;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            width: calc(100% - 12vw);
+            margin: 32px 6vw 0 6vw;
+            height: 1px;
+            background-color: #c4c4c4;
+        }
+
+        /* ── ACUERDO ── */
+        .acuerdo-wrap {
+            padding: 40px 6vw 0 6vw;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+        }
+        .acuerdo {
+            display: block;
+            border: 1px solid #c4c4c4;
+            padding: 16px 22px;
+            font-size: 0.83rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: #444;
+            line-height: 1.7;
+        }
+        .acuerdo-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.2em;
+            color: #aaa;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 7px;
+        }
+
+        /* ── BODY ── */
+        .body { padding: 52px 6vw 0 6vw; }
+
+        /* ── PARTE ── */
+        .parte {
+            margin-bottom: 64px;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+        .parte.locked { display: none; }
+        .parte.unlocked {
+            display: block;
+            opacity: 0;
+            animation: revealParte 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .parte-header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 4px;
+        }
+        .parte-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            color: #202020;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .parte-titulo {
+            font-size: clamp(1.15rem, 5vw, 1.45rem);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            color: #202020;
+            line-height: 1.2;
+        }
+        .parte-desc {
+            font-size: 0.74rem;
+            font-weight: 300;
+            color: #999;
+            font-style: italic;
+            margin-top: 6px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .parte-divider {
+            width: 100%;
+            height: 1px;
+            background-color: #ddd;
+            margin-bottom: 24px;
+        }
+
+        /* ── PREGUNTAS ── */
+        .preguntas { list-style: none; }
+        .pregunta-item {
+            display: grid;
+            grid-template-columns: 30px 1fr;
+            gap: 14px;
+            padding: 18px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .pregunta-item:first-child { border-top: 1px solid #e8e8e8; }
+        .pregunta-n {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #202020;
+            letter-spacing: 0.08em;
+            padding-top: 3px;
+        }
+        .pregunta-texto {
+            font-size: 0.93rem;
+            font-weight: 300;
+            line-height: 1.75;
+            color: #202020;
+        }
+
+        /* ── BLOQUE LIBRE ── */
+        .bloque-libre {
+            padding: 22px 24px;
+            background-color: #ebebeb;
+            border-left: 3px solid #202020;
+        }
+        .bloque-libre p {
+            font-size: 0.92rem;
+            font-weight: 300;
+            line-height: 1.85;
+            color: #202020;
+            margin-bottom: 14px;
+        }
+        .bloque-libre p:last-child { margin-bottom: 0; }
+        .bloque-libre .nota {
+            font-size: 0.72rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* ── COMPROMISO ── */
+        .compromiso-frase {
+            padding: 22px 24px;
+            border: 1px solid #c4c4c4;
+        }
+        .compromiso-frase p {
+            font-size: 0.92rem;
+            font-weight: 300;
+            line-height: 1.85;
+            color: #202020;
+            margin-bottom: 14px;
+        }
+        .compromiso-highlight {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #202020;
+            letter-spacing: -0.02em;
+            display: block;
+            margin: 16px 0 14px;
+        }
+        .compromiso-nota {
+            font-size: 0.72rem;
+            color: #999;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        /* ── BOTÓN ── */
+        .btn-wrap { margin-top: 28px; }
+        .btn-wrap.oculto {
+            animation: fadeOutBtn 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+            pointer-events: none;
+        }
+        .btn-siguiente {
+            position: relative;
+            display: flex;
+            width: 100%;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 18px 22px;
+            background: #e0e0e0;
+            transition: background 0.25s ease;
+        }
+        .btn-texto {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #202020;
+        }
+        .btn-icono {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(32,32,32,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #202020;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        @media (hover: hover) {
+            .btn-siguiente:hover .btn-inner { background: #d4d4d4; }
+            .btn-siguiente:hover .btn-icono { transform: translateX(4px); }
+        }
+        .btn-siguiente:active .btn-inner { background: #cacaca; }
+
+        /* ── POLAROIDS SECTION ── */
+        .polaroids-section {
+            display: none;
+            padding: 0 0 100px 0;
+        }
+        .polaroids-section.visible {
+            display: block;
+            animation: revealParte 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .polaroids-header {
+            padding: 0 6vw;
+            margin-bottom: 32px;
+        }
+        .polaroids-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            color: #202020;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .polaroids-titulo {
+            font-size: clamp(1.15rem, 5vw, 1.45rem);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            color: #202020;
+            margin-bottom: 6px;
+        }
+        .polaroids-desc {
+            font-size: 0.74rem;
+            font-weight: 300;
+            color: #999;
+            font-style: italic;
+        }
+        .polaroids-divider {
+            width: calc(100% - 12vw);
+            margin: 20px 6vw 32px 6vw;
+            height: 1px;
+            background-color: #ddd;
+        }
+
+        /* ── MESA ── */
+        .polaroids-mesa {
+            position: relative;
+            width: 100%;
+            min-height: 460px;
+            padding: 40px 6vw 60px 6vw;
+            overflow: hidden;
+        }
+        .polaroids-inner {
+            position: relative;
+            width: 100%;
+            height: 420px;
+        }
+
+        /* ── POLAROID CARD (flip) ── */
+        .pol-wrap {
+            position: absolute;
+            width: 150px;
+            perspective: 800px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pol-wrap:nth-child(1) { top: 20px;  left: 2vw;   z-index: 3; }
+        .pol-wrap:nth-child(2) { top: 55px;  left: 110px; z-index: 2; }
+        .pol-wrap:nth-child(3) { top: 15px;  left: 200px; z-index: 4; }
+        .pol-wrap:nth-child(4) { top: 70px;  left: 40px;  z-index: 1; }
+        .pol-wrap:nth-child(5) { top: 30px;  left: 160px; z-index: 5; }
+        .pol-wrap:nth-child(6) { top: 50px;  left: 80px;  z-index: 3; }
+
+        .pol-inner {
+            position: relative;
+            width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pol-wrap.flipped .pol-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Frente */
+        .pol-front, .pol-back {
+            width: 150px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .pol-front {
+            background: #fff;
+            padding: 9px 9px 34px 9px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .pol-back {
+            position: absolute;
+            top: 0; left: 0;
+            background: #fff;
+            padding: 16px 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100%;
+        }
+        .pol-img {
+            width: 132px;
+            height: 132px;
+            object-fit: cover;
+            display: block;
+            filter: saturate(0.85) contrast(1.02);
+            pointer-events: none;
+        }
+        .pol-caption {
+            margin-top: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.48rem;
+            letter-spacing: 0.08em;
+            color: #aaa;
+            text-transform: uppercase;
+            text-align: center;
+            pointer-events: none;
+        }
+        .pol-back-texto {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 300;
+            line-height: 1.65;
+            color: #333;
+            flex: 1;
+        }
+        .pol-back-hint {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.44rem;
+            letter-spacing: 0.12em;
+            color: #ccc;
+            text-transform: uppercase;
+            margin-top: 12px;
+            text-align: right;
+        }
+
+        /* Rotaciones iniciales */
+        .pol-wrap:nth-child(1) .pol-inner { transform: rotate(-3.5deg); }
+        .pol-wrap:nth-child(2) .pol-inner { transform: rotate(2.8deg); }
+        .pol-wrap:nth-child(3) .pol-inner { transform: rotate(-1.5deg); }
+        .pol-wrap:nth-child(4) .pol-inner { transform: rotate(4.5deg); }
+        .pol-wrap:nth-child(5) .pol-inner { transform: rotate(-2.2deg); }
+        .pol-wrap:nth-child(6) .pol-inner { transform: rotate(3.1deg); }
+
+        .pol-wrap.flipped .pol-inner { transform: rotateY(180deg) !important; }
+
+        .pol-wrap.lifted .pol-front,
+        .pol-wrap.lifted .pol-back {
+            box-shadow: 0 14px 40px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mesa-hint {
+            text-align: center;
+            padding: 10px 6vw 0 6vw;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.14em;
+            color: #bbb;
+            text-transform: uppercase;
+        }
+
+        /* ── ZOOM OVERLAY ── */
+        .zoom-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.82);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            cursor: zoom-out;
+        }
+        .zoom-overlay.active { display: flex; }
+        .zoom-overlay img {
+            max-width: min(90vw, 480px);
+            max-height: 80vh;
+            object-fit: contain;
+            border: 10px solid #fff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.88); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* ── CIERRE ── */
+        .cierre {
+            padding: 40px 6vw 20px 6vw;
+            border-top: 1px solid #c4c4c4;
+            display: none;
+        }
+        .cierre.visible {
+            display: block;
+            animation: revealParte 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .cierre p {
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: #aaa;
+            letter-spacing: 0.05em;
+            line-height: 2.2;
+        }
+
+        /* ── FOOTER ── */
+        .footer { padding: 20px 6vw 48px 6vw; }
+        .footer-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.2em;
+            color: #c4c4c4;
+            text-transform: uppercase;
+        }
+
+        /* ── DESKTOP ── */
+        @media (min-width: 768px) {
+            .header        { padding: 64px 16vw 0 16vw; }
+            .divider       { width: calc(100% - 32vw); margin: 36px 16vw 0 16vw; }
+            .acuerdo-wrap  { padding: 48px 16vw 0 16vw; }
+            .body          { padding: 64px 16vw 0 16vw; }
+            .polaroids-header { padding: 0 16vw; }
+            .polaroids-divider { width: calc(100% - 32vw); margin: 20px 16vw 32px 16vw; }
+            .polaroids-mesa { padding: 60px 16vw 80px 16vw; min-height: 520px; }
+            .polaroids-inner { height: 460px; }
+            .pol-wrap { width: 180px; }
+            .pol-front, .pol-back { width: 180px; }
+            .pol-img { width: 162px; height: 162px; }
+            .pol-wrap:nth-child(1) { top: 30px;  left: 4vw;   }
+            .pol-wrap:nth-child(2) { top: 70px;  left: 200px; }
+            .pol-wrap:nth-child(3) { top: 20px;  left: 380px; }
+            .pol-wrap:nth-child(4) { top: 90px;  left: 540px; }
+            .pol-wrap:nth-child(5) { top: 40px;  left: 680px; }
+            .pol-wrap:nth-child(6) { top: 75px;  left: 320px; }
+            .mesa-hint { padding: 14px 16vw 0 16vw; }
+            .cierre  { padding: 48px 16vw 24px 16vw; }
+            .footer  { padding: 24px 16vw 60px 16vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ZOOM OVERLAY -->
+    <div class="zoom-overlay" id="zoom-overlay" onclick="cerrarZoom()">
+        <img id="zoom-img" src="" alt="">
+    </div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <p class="header-label">[ Dinámica de pareja ]</p>
+            <h1 class="header-titulo">Cortar<br>la Racha</h1>
+        </div>
+        <p class="header-meta">Para cuando se<br>acumula demasiado<br>y ninguno sabe<br>cómo volver.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ACUERDO -->
+    <div class="acuerdo-wrap">
+        <div class="acuerdo">
+            <span class="acuerdo-tag">[ Antes de empezar ]</span>
+            Hoy no venimos a tener razón. Venimos a entendernos.
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="body">
+
+        <!-- PARTE 01 -->
+        <div class="parte" id="parte-1">
+            <div class="parte-header">
+                <span class="parte-num">[ 01 ]</span>
+                <h2 class="parte-titulo">Cómo Funciono Yo</h2>
+            </div>
+            <p class="parte-desc">Cada uno responde en su libreta, en silencio. Después comparten.</p>
+            <div class="parte-divider"></div>
+            <ul class="preguntas">
+                <li class="pregunta-item"><span class="pregunta-n">01.</span><p class="pregunta-texto">Cuando algo me molesta, mi primera reacción real (no la que quiero tener) es...</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">02.</span><p class="pregunta-texto">En ese momento, lo que más necesito del otro es...</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">03.</span><p class="pregunta-texto">El pensamiento que más me cuesta controlar cuando algo me molesta es...</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">04.</span><p class="pregunta-texto">Lo que más me cuesta decir cuando estoy enojada/o es...</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">05.</span><p class="pregunta-texto">Una señal de que ya volví a estar bien, aunque no lo diga, es...</p></li>
+            </ul>
+            <div class="btn-wrap" id="btn-1">
+                <button class="btn-siguiente" onclick="desbloquear('parte-2','btn-1')">
+                    <div class="btn-inner">
+                        <span class="btn-texto">Siguiente parte</span>
+                        <span class="btn-icono">→</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PARTE 02 -->
+        <div class="parte locked" id="parte-2">
+            <div class="parte-header">
+                <span class="parte-num">[ 02 ]</span>
+                <h2 class="parte-titulo">Nosotros en lo Chico</h2>
+            </div>
+            <p class="parte-desc">Las preguntas que importan pero nunca nos hacemos.</p>
+            <div class="parte-divider"></div>
+            <ul class="preguntas">
+                <li class="pregunta-item"><span class="pregunta-n">01.</span><p class="pregunta-texto">Nombra tres cosas pequeñas y distintas que te acercan demasiado al otro.</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">02.</span><p class="pregunta-texto">¿Cuál es el momento del día en que más piensas en el otro sin ninguna razón especial?</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">03.</span><p class="pregunta-texto">¿Qué cosa hace el otro que nunca le has dicho que te encanta?</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">04.</span><p class="pregunta-texto">¿Cuál es la versión del otro que más te gusta y por qué?</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">05.</span><p class="pregunta-texto">Si pudieras cambiar una sola cosa de cómo nos comunicamos cuando algo anda mal, ¿qué sería?</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">06.</span><p class="pregunta-texto">¿Hay algo que sientes que se repite entre nosotros y que nunca hemos terminado de resolver del todo?</p></li>
+            </ul>
+            <div class="btn-wrap" id="btn-2">
+                <button class="btn-siguiente" onclick="desbloquear('parte-3','btn-2')">
+                    <div class="btn-inner">
+                        <span class="btn-texto">Siguiente parte</span>
+                        <span class="btn-icono">→</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PARTE 03 -->
+        <div class="parte locked" id="parte-3">
+            <div class="parte-header">
+                <span class="parte-num">[ 03 ]</span>
+                <h2 class="parte-titulo">Archivo de Pendientes</h2>
+            </div>
+            <p class="parte-desc">Todo lo que se quedó sin decir esta semana. Sin filtro, sin drama.</p>
+            <div class="parte-divider"></div>
+            <div class="bloque-libre">
+                <p>Escribe algo que has sentido estas semanas y que no encontraste el momento de decir. No tiene que tener explicación ni justificación. Solo ponlo en palabras.</p>
+                <p class="nota">No se lee en voz alta si no se quiere. El solo hecho de escribirlo ya libera algo. Después, si quieren, comparten solo lo que sientan que el otro necesita escuchar.</p>
+            </div>
+            <div class="btn-wrap" id="btn-3">
+                <button class="btn-siguiente" onclick="desbloquear('parte-4','btn-3')">
+                    <div class="btn-inner">
+                        <span class="btn-texto">Siguiente parte</span>
+                        <span class="btn-icono">→</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PARTE 04 -->
+        <div class="parte locked" id="parte-4">
+            <div class="parte-header">
+                <span class="parte-num">[ 04 ]</span>
+                <h2 class="parte-titulo">Corte Oficial</h2>
+            </div>
+            <p class="parte-desc">Cada uno completa esto en su libreta, a su ritmo. Después se leen en voz alta, sin interrumpirse.</p>
+            <div class="parte-divider"></div>
+            <ul class="preguntas">
+                <li class="pregunta-item"><span class="pregunta-n">01.</span><p class="pregunta-texto">Esta semana cargué con _______ y lo que necesitaba de ti era _______.</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">02.</span><p class="pregunta-texto">Algo que hiciste esta semana y que no te agradecí fue _______.</p></li>
+                <li class="pregunta-item"><span class="pregunta-n">03.</span><p class="pregunta-texto">Lo que más quiero que sepas ahora mismo es _______.</p></li>
+            </ul>
+            <div class="btn-wrap" id="btn-4">
+                <button class="btn-siguiente" onclick="desbloquear('parte-5','btn-4')">
+                    <div class="btn-inner">
+                        <span class="btn-texto">Siguiente parte</span>
+                        <span class="btn-icono">→</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PARTE 05 -->
+        <div class="parte locked" id="parte-5">
+            <div class="parte-header">
+                <span class="parte-num">[ 05 ]</span>
+                <h2 class="parte-titulo">El Compromiso</h2>
+            </div>
+            <p class="parte-desc">Cuando terminen, cierren los ojos un momento. Piensen en una sola cosa concreta que quieren hacer diferente.</p>
+            <div class="parte-divider"></div>
+            <div class="compromiso-frase">
+                <p>Después, escriban:</p>
+                <span class="compromiso-highlight">"Después de hoy, yo me comprometo a..."</span>
+                <p class="compromiso-nota">Y abajo, lo que quieran. Todo lo que necesiten decir. Sin formato, sin límite, sin que el otro lo corrija ni lo cuestione. Es tuyo.<br><br>Cuando los dos terminen, se lo leen al otro.<br><br>Eso es todo. Ya.</p>
+            </div>
+            <div class="btn-wrap" id="btn-5">
+                <button class="btn-siguiente" onclick="mostrarPolaroids('btn-5')">
+                    <div class="btn-inner">
+                        <span class="btn-texto">Ver el cierre</span>
+                        <span class="btn-icono">↓</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- POLAROIDS -->
+    <div class="polaroids-section" id="polaroids-section">
+        <div class="polaroids-header">
+            <p class="polaroids-label">[ Evidencia ]</p>
+            <h2 class="polaroids-titulo">Lo que somos después</h2>
+            <p class="polaroids-desc">Toca cada foto para ver qué pasó después.</p>
+        </div>
+        <div class="polaroids-divider"></div>
+
+        <div class="polaroids-mesa">
+            <div class="polaroids-inner" id="polaroids-inner">
+
+                <!-- P1: Madrid -->
+                <div class="pol-wrap" id="pol-1" onclick="flipCard('pol-1')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p1.webp" alt="Madrid">
+                            <p class="pol-caption">Madrid · Gran Vía</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Nos molestamos el uno del otro más de la cuenta en plena Gran Vía. Lo hablamos, lo soltamos, y terminamos comprando cosas, comiendo churros y cerrando la noche en un restaurante español. Una de las mejores citas que recuerdo.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P2: Fonda -->
+                <div class="pol-wrap" id="pol-2" onclick="flipCard('pol-2')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p2.webp" alt="Fonda">
+                            <p class="pol-caption">Primer mes</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Lo resolvimos, nos arreglamos, y fuimos a celebrar nuestro primer mes a un restaurante al borde del mar. Esta foto es de camino a la camioneta, de la mano, con la noche encima.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P3: Julián -->
+                <div class="pol-wrap" id="pol-3" onclick="flipCard('pol-3')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p3.webp" alt="Stitch">
+                            <p class="pol-caption">Stitch · tamaño real</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Me contaste lo que te preocupaba. Lo hablamos. Y terminamos cocinando tallarines a la carbonara y pintando a Stitch a escala 1:1. No sé cómo llegamos ahí pero fue perfecto.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P4: Halloween / Sushi -->
+                <div class="pol-wrap" id="pol-4" onclick="flipCard('pol-4')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p4.webp" alt="Sushi">
+                            <p class="pol-caption">Halloween · sushi</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Peleamos por el disfraz. Los dos con los humos arriba. Y después terminamos cocinando sushi juntos en la cocina, cagándonos de la risa. Así somos cuando lo resolvemos.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P5: Wraps en la cama -->
+                <div class="pol-wrap" id="pol-5" onclick="flipCard('pol-5')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p5.webp" alt="Wraps">
+                            <p class="pol-caption">Post gym · wraps</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Conversación densa. Lo hablamos. Y después los dos destrozados del gimnasio, comiendo wraps en la cama como si nada hubiera pasado. Eso es lo nuestro.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P6: Ferry / gomitas -->
+                <div class="pol-wrap" id="pol-6" onclick="flipCard('pol-6')">
+                    <div class="pol-inner">
+                        <div class="pol-front">
+                            <img class="pol-img" src="p6.webp" alt="Ferry">
+                            <p class="pol-caption">Ferry · gomitas</p>
+                        </div>
+                        <div class="pol-back">
+                            <p class="pol-back-texto">Fue incómodo, lo sé. Lo hablé mal y te lo hice pasar mal. Pero lo dijiste, lo escuché, y terminamos esperando el siguiente ferry riéndonos de cualquier cosa. Gracias por decirlo siempre.</p>
+                            <p class="pol-back-hint">← volver</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <p class="mesa-hint">toca para ver · arrastra para mover</p>
+    </div>
+
+    <!-- CIERRE -->
+    <div class="cierre" id="cierre">
+        <p>Cortar la racha no significa que todo esté resuelto.<br>Significa que decidieron volver a estar en el mismo equipo para resolverlo.</p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p class="footer-label">[ SiempreLab · A&J ]</p>
+    </div>
+
+    <script>
+        /* ── DESBLOQUEAR ── */
+        function desbloquear(idSiguiente, idBtn) {
+            var btn = document.getElementById(idBtn);
+            if (btn) {
+                btn.classList.add('oculto');
+                setTimeout(function() { btn.style.display = 'none'; }, 380);
+            }
+            setTimeout(function() {
+                var sig = document.getElementById(idSiguiente);
+                if (!sig) return;
+                sig.classList.remove('locked');
+                sig.classList.add('unlocked');
+                setTimeout(function() {
+                    sig.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 80);
+            }, 200);
+        }
+
+        function mostrarPolaroids(idBtn) {
+            var btn = document.getElementById(idBtn);
+            if (btn) {
+                btn.classList.add('oculto');
+                setTimeout(function() { btn.style.display = 'none'; }, 380);
+            }
+            setTimeout(function() {
+                var sec = document.getElementById('polaroids-section');
+                var cie = document.getElementById('cierre');
+                sec.classList.add('visible');
+                cie.classList.add('visible');
+                setTimeout(function() {
+                    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 80);
+                initDrag();
+            }, 200);
+        }
+
+        /* ── FLIP ── */
+        function flipCard(id) {
+            var wrap = document.getElementById(id);
+            wrap.classList.toggle('flipped');
+        }
+
+        /* ── ZOOM ── */
+        function abrirZoom(src) {
+            document.getElementById('zoom-img').src = src;
+            document.getElementById('zoom-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function cerrarZoom() {
+            document.getElementById('zoom-overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        /* ── DRAG POLAROIDS ── */
+        function initDrag() {
+            var pols = document.querySelectorAll('.pol-wrap');
+            var topZ = 10;
+
+            pols.forEach(function(pol) {
+                var startX, startY, origLeft, origTop;
+                var dragging = false;
+                var moved = false;
+
+                function getPos(e) {
+                    return e.touches
+                        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                        : { x: e.clientX, y: e.clientY };
+                }
+
+                function onDown(e) {
+                    dragging = true;
+                    moved = false;
+                    topZ++;
+                    pol.style.zIndex = topZ;
+                    pol.classList.add('lifted');
+                    var pos = getPos(e);
+                    startX = pos.x;
+                    startY = pos.y;
+                    origLeft = pol.offsetLeft;
+                    origTop  = pol.offsetTop;
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function onMove(e) {
+                    if (!dragging) return;
+                    var pos = getPos(e);
+                    var dx = pos.x - startX;
+                    var dy = pos.y - startY;
+                    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+                    pol.style.left = (origLeft + dx) + 'px';
+                    pol.style.top  = (origTop  + dy) + 'px';
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function onUp(e) {
+                    if (!dragging) return;
+                    dragging = false;
+                    pol.classList.remove('lifted');
+                    // Si no se movió, fue un tap → flip
+                    if (!moved) flipCard(pol.id);
+                }
+
+                pol.addEventListener('mousedown',  onDown,  { passive: false });
+                pol.addEventListener('touchstart',  onDown,  { passive: false });
+                window.addEventListener('mousemove', onMove, { passive: false });
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('mouseup',   onUp);
+                window.addEventListener('touchend',  onUp);
+            });
+        }
+    </script>
+
+</body>
+</html>
